@@ -15,6 +15,7 @@ class NoteActivity : AppCompatActivity() {
     private lateinit var binding : ActivityNoteBinding
     private val noteDatabase by lazy { NoteDatabase.getDatabase(this).noteDao() }
     private var noteDetail : Note? = null
+    private var noteType : String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +24,12 @@ class NoteActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         noteDetail = intent.getSerializableExtra("Note") as Note?
+        noteType = intent.getStringExtra("NoteType")
+        if(noteType == "Edit") {
+            binding.saveBtn.text = getString(R.string.update)
+            binding.tvNote.setText(noteDetail?.noteText)
+
+        }
 
         setUpListeners()
     }
@@ -38,8 +45,15 @@ class NoteActivity : AppCompatActivity() {
 
         }
         binding.saveBtn.setOnClickListener {
-            lifecycleScope.launch {
-                noteDatabase.addNote(Note(null, binding.tvNote.text.toString()))
+            if(noteType == "Add") {
+                lifecycleScope.launch {
+                    noteDatabase.addNote(Note(null, binding.tvNote.text.toString()))
+                }
+            }else{
+                lifecycleScope.launch {
+                    val updatedNote = Note(noteDetail?.id, binding.tvNote.text.toString())
+                    noteDatabase.editNote(updatedNote)
+                }
             }
             finish()
         }

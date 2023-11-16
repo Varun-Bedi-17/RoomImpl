@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class Note(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val id : Int?,
+    var id : Int?,
     @ColumnInfo(name = "noteText")
     val noteText: String
 ) :java.io.Serializable

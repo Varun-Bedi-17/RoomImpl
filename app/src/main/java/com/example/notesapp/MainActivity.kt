@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity(), NotesAdapter.OnItemClickListener {
         setUpRecyclerView()
         binding.idFABAdd.setOnClickListener {
             val intent = Intent(this, NoteActivity::class.java)
+            intent.putExtra("NoteType", "Add")
             startActivity(intent)
         }
 
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity(), NotesAdapter.OnItemClickListener {
 
     override fun onItemClick(note: Note) {
         val intent = Intent(this, NoteActivity::class.java)
+        intent.putExtra("NoteType", "Edit")
         intent.putExtra("Note", note)
         startActivity(intent)
     }

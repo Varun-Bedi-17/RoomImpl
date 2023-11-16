@@ -2,4 +2,5 @@
     <string name="app_name">NotesApp</string>
     <string name="add_btn">Add button</string>
     <string name="enter_something">Enter Something</string>
+    <string name="update">Update</string>
 </resources>
