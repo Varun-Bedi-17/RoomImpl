@@ -53,6 +53,7 @@ class NoteActivity : AppCompatActivity() {
                     noteDatabase.editNote(updatedNote)
                 }
             }
+            setResult(RESULT_OK)
             finish()
         }
     }

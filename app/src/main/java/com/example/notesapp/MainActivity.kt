@@ -3,6 +3,7 @@ package com.example.notesapp
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.notesapp.adapters.NotesAdapter
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity(), NotesAdapter.OnItemClickListener {
 
         setUpRecyclerView()
         setUpListeners()
+        updateUi()
 
     }
 
@@ -58,12 +60,12 @@ class MainActivity : AppCompatActivity(), NotesAdapter.OnItemClickListener {
             putExtra(Constants.NoteType, noteType)
             note?.let { putExtra(Constants.Note, it) }
         }
-        startActivity(intent)
+        noteActivity.launch(intent)
     }
-
-    override fun onResume() {
-        super.onResume()
-        updateUi()
+    private val noteActivity =  registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if(it.resultCode == RESULT_OK){
+            updateUi()
+        }
     }
 
     /**
@@ -87,9 +89,10 @@ class MainActivity : AppCompatActivity(), NotesAdapter.OnItemClickListener {
     override fun onDeleteClick(note: Note) {
         lifecycleScope.launch {
             noteDatabase.deleteNote(note)
-            currentAddedNotes.remove(note)
-            notesAdapter.submitList(currentAddedNotes.toList())
-            // updateUi()
+            /*currentAddedNotes.remove(note)
+            notesAdapter.submitList(currentAddedNotes.toList())*/
+            updateUi()
         }
     }
+
 }

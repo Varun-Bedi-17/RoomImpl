@@ -31,6 +31,7 @@ class NotesAdapter(private val listener : OnItemClickListener) : RecyclerView.Ad
                 listener.onDeleteClick(data)
             }
         }
+
     }
 
     override fun getItemCount() = differ.currentList.size
