@@ -1,15 +1,14 @@
 package com.example.notesapp
 
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
-import com.example.notesapp.databinding.ActivityMainBinding
 import com.example.notesapp.databinding.ActivityNoteBinding
 import com.example.notesapp.models.local.Note
 import com.example.notesapp.models.local.NoteDatabase
-import kotlinx.coroutines.Dispatchers
+import com.example.notesapp.utils.Constants
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class NoteActivity : AppCompatActivity() {
     private lateinit var binding : ActivityNoteBinding
@@ -18,14 +17,19 @@ class NoteActivity : AppCompatActivity() {
     private var noteType : String? = null
 
 
+    @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNoteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        noteDetail = intent.getSerializableExtra("Note") as Note?
-        noteType = intent.getStringExtra("NoteType")
-        if(noteType == "Edit") {
+        noteDetail = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(Constants.Note, Note::class.java)
+        }else{
+            intent.getSerializableExtra(Constants.Note) as Note?
+        }
+        noteType = intent.getStringExtra(Constants.NoteType)
+        if(noteType == Constants.Edit) {
             binding.saveBtn.text = getString(R.string.update)
             binding.tvNote.setText(noteDetail?.noteText)
 
@@ -34,18 +38,12 @@ class NoteActivity : AppCompatActivity() {
         setUpListeners()
     }
 
+    /**
+     * Sets up listeners for various UI elements
+     */
     private fun setUpListeners() {
-
-        binding.deleteBtn.setOnClickListener {
-            lifecycleScope.launch {
-                noteDetail?.let { it1 -> noteDatabase.deleteNote(it1) }
-            }
-        }
-        binding.updateBtn.setOnClickListener {
-
-        }
         binding.saveBtn.setOnClickListener {
-            if(noteType == "Add") {
+            if(noteType == Constants.Add) {
                 lifecycleScope.launch {
                     noteDatabase.addNote(Note(null, binding.tvNote.text.toString()))
                 }

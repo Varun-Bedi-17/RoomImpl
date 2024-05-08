@@ -9,9 +9,8 @@ import com.example.notesapp.adapters.NotesAdapter
 import com.example.notesapp.databinding.ActivityMainBinding
 import com.example.notesapp.models.local.Note
 import com.example.notesapp.models.local.NoteDatabase
+import com.example.notesapp.utils.Constants
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -25,35 +24,41 @@ class MainActivity : AppCompatActivity(), NotesAdapter.OnItemClickListener {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         setUpRecyclerView()
-        binding.idFABAdd.setOnClickListener {
-            val intent = Intent(this, NoteActivity::class.java)
-            intent.putExtra("NoteType", "Add")
-            startActivity(intent)
-        }
+        setUpListeners()
 
     }
 
+    /**
+     * Initializes and configures the RecyclerView with a NotesAdapter and a LinearLayoutManager
+     */
     private fun setUpRecyclerView() {
-        notesAdapter = NotesAdapter(this@MainActivity, currentAddedNotes)
+        notesAdapter = NotesAdapter(this)
         binding.rvNotes.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = notesAdapter
         }
     }
 
-    override fun onItemClick(note: Note) {
-        val intent = Intent(this, NoteActivity::class.java)
-        intent.putExtra("NoteType", "Edit")
-        intent.putExtra("Note", note)
-        startActivity(intent)
+    /**
+     * Sets up listeners for various UI elements
+     */
+    private fun setUpListeners() {
+        binding.idFABAdd.setOnClickListener {
+            startNoteActivity(Constants.Add, null)
+        }
     }
 
-    override fun onDeleteClick(note: Note) {
-        lifecycleScope.launch {
-            noteDatabase.deleteNote(note)
-            updateUi()
+    /**
+     * Launches NoteActivity with specific parameters for adding or editing notes
+     */
+    private fun startNoteActivity(noteType: String, note: Note?) {
+        val intent = Intent(this, NoteActivity::class.java).apply {
+            putExtra(Constants.NoteType, noteType)
+            note?.let { putExtra(Constants.Note, it) }
         }
+        startActivity(intent)
     }
 
     override fun onResume() {
@@ -61,14 +66,30 @@ class MainActivity : AppCompatActivity(), NotesAdapter.OnItemClickListener {
         updateUi()
     }
 
+    /**
+     * Updates the user interface by fetching notes from the database and submitting them to the adapter
+     */
     private fun updateUi() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 currentAddedNotes = noteDatabase.getNotes().toMutableList()
             }
             withContext(Dispatchers.Main){
-                notesAdapter.refresh(currentAddedNotes)
+                notesAdapter.submitList(currentAddedNotes.toList())
             }
+        }
+    }
+
+    override fun onItemClick(note: Note) {
+        startNoteActivity(Constants.Edit, note)
+    }
+
+    override fun onDeleteClick(note: Note) {
+        lifecycleScope.launch {
+            noteDatabase.deleteNote(note)
+            currentAddedNotes.remove(note)
+            notesAdapter.submitList(currentAddedNotes.toList())
+            // updateUi()
         }
     }
 }

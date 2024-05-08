@@ -3,4 +3,6 @@
     <string name="add_btn">Add button</string>
     <string name="enter_something">Enter Something</string>
     <string name="update">Update</string>
+    <string name="save">Save</string>
+    <string name="delete_icon">Delete Icon</string>
 </resources>
